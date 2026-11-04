@@ -6,4 +6,9 @@ hostname_part, rest = raw_line.split(",", 1)
 
 for piece in rest.split(","):
     key, value = piece.split("=")
-    print(key, float(value))
+    try:
+        print(key, str(value))
+    except ValueError:
+        print(f"Invalid float for {key}: {value}")
+
+#value error as the string is not a float meaning it cannot be converted to a float.

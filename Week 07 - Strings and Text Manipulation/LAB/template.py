@@ -2,58 +2,70 @@
 RECORD CHECK  -  my version
 ===========================
 
-Name  :
-Lane  :  AI / Cyber / IT      (delete two)
-Date  :
+Name  : Dea Kambo 
+Lane  :  Cyber      
+Date  : 4/11/26
+
 
 Run it:   python template.py
 
-Work through the numbered sections in order. Each one tells you what it must do.
-Delete these instructions as you replace them with your code.
 """
 
-# =================================================================== FUNCTIONS
-# 1. Write parse_line(raw_line) that cleans and parses one raw, messy line
-#    into a dict. Handle inconsistent spacing and case - that is the whole
-#    point of this week.
-#
-#    Typical and above: also write status_of(...), shaped for your lane
-#    (e.g. OVER LIMIT / WARNING / OK, or FLAGGED / OK). Give both a
-#    one-line docstring.
+# 1. Write parse_line(raw_line) that cleans and parses one raw, messy line 
 
-# your function(s) go here
+def parse_line(raw_line):
+    line = raw_line.strip().lower()
+    record = {}
+    for piece in line.split(","):
+        key, value = piece.split("=")
+        record[key.strip()] = value.strip()
+    record["attempts"] = int(record["attempts"])   # raises ValueError if not a number
+    return record
 
 
-# ====================================================================== INPUT
+def status_of(record, limit=10):
+    if record["result"] == "failed" and record["attempts"] >= limit:
+        return "FLAGGED"
+    return "OK"
+
 # 2. Your raw, messy records - at least 5, deliberately varied in spacing
-#    and case. Match the shape to your lane:
-#
-#    AI / Data Science : "  Survey_2026 , rating=4 , age=23  "
-#    Cyber Security     : "SRC=10.0.0.5,ATTEMPTS=12,RESULT=FAILED"
-#    IT                  : "  Srv-01 , used=87 , total=100  "
-#
-#    Excellent: save these lines to a file and load them with open() /
-#    a for loop over the file, instead of writing them directly here.
 
-raw_records = []   # replace with your code
+raw_records = [
+    "  SRC=10.0.0.5 , ATTEMPTS=12 , RESULT=FAILED  \n",
+    "src=192.168.1.20,attempts=3,result=failed\n",
+    "SRC=172.16.0.9,   Attempts=25,Result=Failed\n",
+    "  src = 10.0.0.77 ,ATTEMPTS = 1 , RESULT = SUCCESS\n",
+    "SRC=203.0.113.4,ATTEMPTS=10,RESULT=FAILED\n",
+    "SRC=10.0.0.8,ATTEMPTS=many,RESULT=FAILED\n",    # will not convert to a number
+]
+
+# Excellent: save the raw lines to a file, then load them back from it
+with open("raw_records.txt", "w") as f:
+    f.writelines(raw_records)
+
+with open("raw_records.txt") as f:
+    raw_records = f.readlines()
 
 
-# =============================================================== PROCESS + OUTPUT
 # 3. Parse and report on every record.
-#
-#    Threshold : parse each record, print the cleaned dict.
-#    Typical   : also call status_of(...) for each, print it alongside.
-#    Excellent : print a one-line summary at the end - how many records,
-#                how many flagged.
+total = 0
+flagged = 0
+unparsed = 0
 
 for raw_record in raw_records:
-    pass   # replace with your code
+    if not raw_record.strip():          # skip blank lines
+        continue
+    total += 1
+    try:
+        record = parse_line(raw_record)
+    except ValueError as error:
+        unparsed += 1
+        print("Could not parse:", raw_record.strip(), "->", error)
+        continue
 
+    status = status_of(record)
+    if status == "FLAGGED":
+        flagged += 1
+    print(record, status)
 
-# ==========================================================================
-# 4. Before you finish:
-#
-#    [ ] Run it against at least 5 genuinely messy raw records
-#    [ ] Run it with a value that will not convert to a number - write the
-#        error down
-#    [ ] Check every function does one job, with a docstring
+print(f"Summary: {total} records, {flagged} flagged, {unparsed} could not be parsed")
